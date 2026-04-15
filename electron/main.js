@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell, globalShortcut } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, globalShortcut, Tray, Menu } = require("electron");
 const path = require("path");
 const http = require("http");
 const https = require("https");
@@ -9,9 +9,20 @@ const DEFAULT_REMOTE_URL = "http://SCBO-PC23X5RJ:3000";
 
 let mainWindow = null;
 let remoteWindow = null;
+let tray = null;
 
 function log(...args) {
   console.log("[DymoPrintManager]", ...args);
+}
+
+function getTrayIconPath() {
+  if (app.isPackaged) {
+    // After build → goes into resources folder
+    return path.join(process.resourcesPath, 'dymo_ico.png');
+  } else {
+    // In development
+    return path.join(__dirname, '..', 'build', 'dymo_ico.png');
+  }
 }
 
 function getArgValue(name) {
@@ -330,6 +341,35 @@ app.whenReady().then(async () => {
   log("argv:", process.argv);
 
   await createAndLoadMainWindow();
+  const iconPath = getTrayIconPath();
+
+  tray = new Tray(iconPath);
+  tray.setToolTip("Dymo Print Manager");
+
+  const trayMenu = Menu.buildFromTemplate([
+    {
+      label: "Open",
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      }
+    },
+    {
+      label: "Set Remote URL",
+      click: () => openSetRemoteWindow()
+    },
+    { type: "separator" },
+    {
+      label: "Quit",
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setContextMenu(trayMenu);
 
   const shortcutRegistered = globalShortcut.register("F10", () => {
     log("Global shortcut pressed: F10");
@@ -346,10 +386,8 @@ app.whenReady().then(async () => {
   });
 });
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+app.on("window-all-closed", (e) => {
+  e.preventDefault();
 });
 
 app.on("will-quit", () => {

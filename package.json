@@ -23,6 +23,12 @@
     "productName": "Dymo Print Manager",
     "artifactName": "${productName}-Setup-${version}.${ext}",
     "icon": "build/icon.ico",
+    "extraResources": [
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
     "files": [
       "electron/**/*",
       "package.json"
