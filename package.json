@@ -32,7 +32,8 @@
           "target": "nsis",
           "arch": [
             "x64"
-          ]
+          ],
+          "icon": "assets/dymo_ico.png"
         }
       ]
     },
