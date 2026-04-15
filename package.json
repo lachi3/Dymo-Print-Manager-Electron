@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dist:win": "electron-builder --win nsis",
+    "dist:win": "electron-builder --win --x64",
     "dist": "electron-builder",
     "dist:mac": "electron-builder --mac"
 
@@ -28,8 +28,12 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
