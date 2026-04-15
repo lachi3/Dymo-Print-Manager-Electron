@@ -1,0 +1,44 @@
+{
+  "name": "dymo-print-manager-electron",
+  "version": "1.0.0",
+  "productName": "DYMO Print Manager",
+  "description": "Desktop wrapper for Dymo Print Manager",
+  "main": "electron/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dev-dependencies": {
+    "electron": "^41.2.0",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.stc.dymoprintmanager",
+    "productName": "Dymo Print Manager",
+    "artifactName": "${productName}-Setup-${version}.${ext}",
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "assets/icon.icns",
+      "target": ["dmg"]
+    }
+  }
+}

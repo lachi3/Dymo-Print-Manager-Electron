@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dymo Print Manager - Offline</title>
+  <style>
+    :root {
+      --bg-1: #f4f7fb;
+      --bg-2: #eef3f9;
+      --bg-3: #ffffff;
+      --border: rgba(255, 255, 255, 0.68);
+      --border-soft: rgba(255, 255, 255, 0.45);
+      --text: #152033;
+      --muted: #607089;
+      --accent: #4f8cff;
+      --accent-2: #7da7ff;
+      --danger: #ff6b6b;
+      --success: #29b36b;
+      --shadow: 0 20px 60px rgba(103, 126, 164, 0.18);
+      --shadow-soft: 0 10px 30px rgba(103, 126, 164, 0.12);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(125, 167, 255, 0.38), transparent 26%),
+        radial-gradient(circle at 88% 14%, rgba(137, 208, 255, 0.34), transparent 24%),
+        radial-gradient(circle at 82% 86%, rgba(168, 208, 255, 0.34), transparent 22%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2) 58%, var(--bg-3));
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: grid;
+      place-items: center;
+      padding: clamp(16px, 3vw, 32px);
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      width: min(320px, 42vw);
+      height: min(320px, 42vw);
+      left: -60px;
+      top: -80px;
+      background: rgba(123, 170, 255, 0.22);
+    }
+
+    body::after {
+      width: min(360px, 48vw);
+      height: min(360px, 48vw);
+      right: -80px;
+      bottom: -100px;
+      background: rgba(137, 208, 255, 0.22);
+    }
+
+    .shell {
+      width: min(960px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.5));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(30px) saturate(160%);
+      -webkit-backdrop-filter: blur(30px) saturate(160%);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.45),
+        rgba(255,255,255,0.08) 55%,
+        rgba(79,140,255,0.08)
+      );
+      pointer-events: none;
+    }
+
+    .hero,
+    .meta,
+    .actions,
+    .footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(72px, 92px) 1fr;
+      gap: clamp(16px, 2vw, 24px);
+      align-items: center;
+      padding: clamp(20px, 3vw, 34px);
+      padding-bottom: 20px;
+    }
+
+    .icon-wrap {
+      width: clamp(72px, 10vw, 92px);
+      height: clamp(72px, 10vw, 92px);
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.58));
+      border: 1px solid rgba(255,255,255,0.75);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.85),
+        0 12px 26px rgba(103, 126, 164, 0.14);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      flex-shrink: 0;
+    }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .icon::before,
+    .icon::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      inset: 0;
+      border: 3px solid rgba(21, 32, 51, 0.9);
+    }
+
+    .icon::after {
+      inset: 10px;
+      border-color: var(--accent);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.6rem, 4vw, 2.1rem);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      font-weight: 750;
+      text-wrap: balance;
+    }
+
+    p {
+      margin: 0;
+      font-size: clamp(0.95rem, 2vw, 1rem);
+      line-height: 1.6;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      padding: 0 clamp(20px, 3vw, 34px) 24px;
+    }
+
+    .panel {
+      min-width: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0.42));
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.65),
+        var(--shadow-soft);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .target {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: #2b3a53;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 0 clamp(20px, 3vw, 34px) 20px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      min-height: 48px;
+      font: inherit;
+      font-weight: 680;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.68;
+      cursor: wait;
+      transform: none;
+    }
+
+    .primary {
+      color: white;
+      background: linear-gradient(180deg, #6ca5ff, #4f8cff);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.38),
+        0 10px 22px rgba(79, 140, 255, 0.26);
+    }
+
+    .secondary {
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(255,255,255,0.76), rgba(255,255,255,0.48));
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        0 8px 18px rgba(103, 126, 164, 0.1);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 0 clamp(20px, 3vw, 34px) clamp(20px, 3vw, 30px);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      background: rgba(255,255,255,0.44);
+      border: 1px solid rgba(255,255,255,0.55);
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.72);
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .status span:last-child {
+      overflow-wrap: anywhere;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--danger);
+      box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.12);
+      flex-shrink: 0;
+    }
+
+    .status.online .dot {
+      background: var(--success);
+      box-shadow: 0 0 0 6px rgba(41, 179, 107, 0.12);
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .hero > div:last-child {
+        width: 100%;
+      }
+
+      p {
+        max-width: none;
+      }
+
+      .meta {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .actions button {
+        width: 100%;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .status {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .small {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 12px;
+      }
+
+      .card {
+        border-radius: 24px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      button {
+        padding: 13px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <div class="hero">
+        <div class="icon-wrap">
+          <div class="icon"></div>
+        </div>
+        <div>
+          <h1>Can’t reach Dymo Print Manager</h1>
+          <p>
+            The app could not connect to the local server or the selected remote host.
+            You can retry, or choose a different remote URL.
+          </p>
+        </div>
+      </div>
+
+      <div class="meta">
+        <div class="panel">
+          <h2>Local target</h2>
+          <div class="target" id="localTarget">Loading…</div>
+        </div>
+        <div class="panel">
+          <h2>Remote target</h2>
+          <div class="target" id="remoteTarget">Loading…</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" id="retryBtn">Retry connection</button>
+        <button class="secondary" id="setRemoteBtn">Set remote URL</button>
+        <button class="secondary" id="refreshBtn">Refresh page</button>
+      </div>
+
+      <div class="footer">
+        <div class="status" id="networkStatus">
+          <span class="dot"></span>
+          <span id="networkText">Checking network status…</span>
+        </div>
+        <div class="small" id="lastChecked">Last checked: just now</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const retryBtn = document.getElementById("retryBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const setRemoteBtn = document.getElementById("setRemoteBtn");
+    const localTarget = document.getElementById("localTarget");
+    const remoteTarget = document.getElementById("remoteTarget");
+    const networkStatus = document.getElementById("networkStatus");
+    const networkText = document.getElementById("networkText");
+    const lastChecked = document.getElementById("lastChecked");
+
+    function setLastChecked() {
+      lastChecked.textContent = `Last checked: ${new Date().toLocaleString()}`;
+    }
+
+    function updateNetworkState() {
+      const online = navigator.onLine;
+      networkStatus.classList.toggle("online", online);
+      networkText.textContent = online
+        ? "This computer appears to have network access"
+        : "This computer appears to be offline";
+    }
+
+    async function loadTargets() {
+      try {
+        const targets = await window.desktopAPI.getServerTargets();
+        localTarget.textContent = targets.local;
+        remoteTarget.textContent = targets.remote;
+      } catch {
+        localTarget.textContent = "http://localhost:3000";
+        remoteTarget.textContent = "http://SCBO-PC23X5RJ:3000";
+      }
+    }
+
+    async function retryConnection() {
+      retryBtn.disabled = true;
+      retryBtn.textContent = "Trying…";
+      setLastChecked();
+
+      try {
+        const result = await window.desktopAPI.retryConnection();
+        if (!result.ok) {
+          retryBtn.disabled = false;
+          retryBtn.textContent = "Retry connection";
+          await loadTargets();
+        }
+      } catch {
+        retryBtn.disabled = false;
+        retryBtn.textContent = "Retry connection";
+      }
+    }
+
+    retryBtn.addEventListener("click", retryConnection);
+    refreshBtn.addEventListener("click", () => location.reload());
+    setRemoteBtn.addEventListener("click", () => window.desktopAPI.openSetRemoteWindow());
+
+    window.addEventListener("online", updateNetworkState);
+    window.addEventListener("offline", updateNetworkState);
+
+    loadTargets();
+    updateNetworkState();
+    setLastChecked();
+  </script>
+</body>
+</html>

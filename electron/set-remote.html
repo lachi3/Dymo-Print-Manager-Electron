@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self' 'unsafe-inline';"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Set Remote URL</title>
+  <style>
+    :root {
+      --bg-1: #f4f7fb;
+      --bg-2: #eef3f9;
+      --bg-3: #ffffff;
+      --border: rgba(255, 255, 255, 0.66);
+      --border-soft: rgba(255, 255, 255, 0.42);
+      --text: #152033;
+      --muted: #607089;
+      --accent: #4f8cff;
+      --danger: #ff6b6b;
+      --success: #29b36b;
+      --shadow: 0 20px 60px rgba(103, 126, 164, 0.18);
+      --shadow-soft: 0 10px 30px rgba(103, 126, 164, 0.12);
+      --radius-xl: 30px;
+      --radius-md: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(125, 167, 255, 0.38), transparent 28%),
+    radial-gradient(circle at 88% 14%, rgba(137, 208, 255, 0.32), transparent 25%),
+    radial-gradient(circle at 78% 88%, rgba(168, 208, 255, 0.3), transparent 22%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2) 58%, var(--bg-3));
+  background-repeat: no-repeat;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: block;
+  padding: clamp(12px, 3vw, 24px);
+  position: relative;
+}
+
+.card {
+  width: min(640px, 100%);
+  margin: 0 auto;
+}
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(52px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      width: min(280px, 40vw);
+      height: min(280px, 40vw);
+      top: -60px;
+      left: -40px;
+      background: rgba(123, 170, 255, 0.2);
+    }
+
+    body::after {
+      width: min(320px, 46vw);
+      height: min(320px, 46vw);
+      right: -70px;
+      bottom: -90px;
+      background: rgba(137, 208, 255, 0.2);
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(640px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.5));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(30px) saturate(160%);
+      -webkit-backdrop-filter: blur(30px) saturate(160%);
+      padding: clamp(18px, 3vw, 28px);
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.44), rgba(255,255,255,0.08) 52%, rgba(79,140,255,0.07));
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 4vw, 1.75rem);
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      font-weight: 750;
+      text-wrap: balance;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .meta {
+      display: grid;
+      gap: 14px;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .label {
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .value {
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.52);
+      border: 1px solid rgba(255,255,255,0.7);
+      color: #2b3a53;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.76);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,0.74);
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,255,255,0.55));
+      color: var(--text);
+      border-radius: 18px;
+      padding: 15px 16px;
+      font: inherit;
+      outline: none;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.82),
+        0 8px 18px rgba(103, 126, 164, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    input::placeholder {
+      color: #8d9ab0;
+    }
+
+    input:focus {
+      border-color: rgba(79, 140, 255, 0.58);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.86),
+        0 0 0 5px rgba(79, 140, 255, 0.12),
+        0 10px 22px rgba(103, 126, 164, 0.1);
+    }
+
+    .hint {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .message {
+      min-height: 22px;
+      font-size: 0.93rem;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .message.error {
+      color: #d44f4f;
+    }
+
+    .message.success {
+      color: var(--success);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 18px;
+      min-height: 48px;
+      width: 100%;
+      font: inherit;
+      font-weight: 680;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.68;
+      cursor: wait;
+      transform: none;
+    }
+
+    .primary {
+      color: white;
+      background: linear-gradient(180deg, #6ca5ff, #4f8cff);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.38),
+        0 10px 22px rgba(79, 140, 255, 0.26);
+    }
+
+    .secondary {
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(255,255,255,0.76), rgba(255,255,255,0.48));
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        0 8px 18px rgba(103, 126, 164, 0.1);
+    }
+
+    .danger {
+      color: #b94646;
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.5));
+      border: 1px solid rgba(255,255,255,0.72);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        0 8px 18px rgba(103, 126, 164, 0.1);
+    }
+
+    @media (max-width: 560px) {
+      .card {
+        border-radius: 24px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 380px) {
+      body {
+        padding: 10px;
+      }
+
+      .card {
+        padding: 16px;
+      }
+
+      input,
+      button {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="content">
+      <h1>Set remote URL</h1>
+      <p>
+        Enter the fallback remote server URL. For Development Purposes.
+      </p>
+
+      <div class="meta">
+        <div class="row">
+          <div class="label">Current effective remote URL</div>
+          <div class="value" id="effectiveRemoteUrl">Loading…</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Saved remote URL</div>
+          <input
+            id="remoteInput"
+            type="text"
+            placeholder="http://SCBO-PC23X5RJ:3000"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <div class="hint">
+            Use a full URL including http:// or https://
+          </div>
+        </div>
+      </div>
+
+      <div class="message" id="message"></div>
+
+      <div class="actions">
+        <button class="primary" id="saveReconnectBtn">Save and reconnect</button>
+        <button class="secondary" id="saveBtn">Save only</button>
+        <button class="danger" id="clearBtn">Clear saved URL</button>
+        <button class="secondary" id="closeBtn">Close</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const effectiveRemoteUrl = document.getElementById("effectiveRemoteUrl");
+    const remoteSource = document.getElementById("remoteSource");
+    const remoteInput = document.getElementById("remoteInput");
+    const message = document.getElementById("message");
+
+    const saveReconnectBtn = document.getElementById("saveReconnectBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const closeBtn = document.getElementById("closeBtn");
+
+    function setMessage(text, type = "") {
+      message.textContent = text;
+      message.className = `message ${type}`.trim();
+    }
+
+    function setBusy(isBusy) {
+      saveReconnectBtn.disabled = isBusy;
+      saveBtn.disabled = isBusy;
+      clearBtn.disabled = isBusy;
+    }
+
+    async function loadSettings() {
+      try {
+        const settings = await window.desktopAPI.getRemoteSettings();
+        effectiveRemoteUrl.textContent = settings.effectiveRemoteUrl || "Not set";
+        remoteSource.textContent = settings.remoteSource || "unknown";
+        remoteInput.value = settings.savedRemoteUrl || "";
+      } catch {
+        setMessage("Could not load current settings.", "error");
+      }
+    }
+
+    async function saveOnly() {
+      setBusy(true);
+      setMessage("");
+
+      try {
+        const result = await window.desktopAPI.saveRemoteUrl(remoteInput.value);
+        setMessage(result.message, result.ok ? "success" : "error");
+        await loadSettings();
+      } catch {
+        setMessage("Could not save the remote URL.", "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function saveAndReconnect() {
+      setBusy(true);
+      setMessage("");
+
+      try {
+        const result = await window.desktopAPI.applyRemoteUrlAndReconnect(remoteInput.value);
+        setMessage(result.message, result.ok ? "success" : "error");
+        await loadSettings();
+      } catch {
+        setMessage("Could not apply the remote URL.", "error");
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function clearSaved() {
+      remoteInput.value = "";
+      await saveOnly();
+    }
+
+    saveReconnectBtn.addEventListener("click", saveAndReconnect);
+    saveBtn.addEventListener("click", saveOnly);
+    clearBtn.addEventListener("click", clearSaved);
+    closeBtn.addEventListener("click", () => window.close());
+
+    remoteInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        saveAndReconnect();
+      }
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
