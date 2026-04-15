@@ -7,11 +7,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "dist:win": "electron-builder --win --x64",
     "dist": "electron-builder",
-    "dist:mac": "electron-builder --mac"
-
+    "dist:mac": "electron-builder --mac --config.directories.output=release/mac",
+    "dist:win": "electron-builder --win --x64 --config.directories.output=release/win"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
