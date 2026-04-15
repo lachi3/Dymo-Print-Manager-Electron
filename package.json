@@ -11,11 +11,10 @@
     "dist:mac": "electron-builder --mac --config.directories.output=release/mac",
     "dist:win": "electron-builder --win --x64 --config.directories.output=release/win"
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dev-dependencies": {
+  "devDependencies": {
     "electron": "^41.2.0",
     "electron-builder": "^26.8.1"
   },
@@ -31,7 +30,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -42,7 +43,9 @@
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "assets/icon.icns",
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     }
   }
 }
