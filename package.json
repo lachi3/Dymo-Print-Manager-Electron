@@ -22,6 +22,7 @@
     "appId": "com.stc.dymoprintmanager",
     "productName": "Dymo Print Manager",
     "artifactName": "${productName}-Setup-${version}.${ext}",
+    "icon": "build/icon.ico",
     "files": [
       "electron/**/*",
       "package.json"
@@ -32,8 +33,7 @@
           "target": "nsis",
           "arch": [
             "x64"
-          ],
-          "icon": "assets/dymo_ico.png"
+          ]
         }
       ]
     },
@@ -43,7 +43,7 @@
     },
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "assets/icon.icns",
+      "icon": "build/icon.icns",
       "target": [
         "dmg"
       ]
