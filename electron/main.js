@@ -202,8 +202,8 @@ function attachMainWindowShortcuts(win) {
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 850,
+    width: 1366,
+    height: 768,
     minWidth: 1000,
     minHeight: 700,
     backgroundColor: "#0b1020",
