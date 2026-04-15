@@ -11,17 +11,35 @@ let mainWindow = null;
 let remoteWindow = null;
 let tray = null;
 
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+      }
+      mainWindow.show();
+      mainWindow.focus();
+    } else {
+      createAndLoadMainWindow().catch((error) => {
+        log("Failed to recreate main window on second-instance:", error);
+      });
+    }
+  });
+}
+
 function log(...args) {
   console.log("[DymoPrintManager]", ...args);
 }
 
 function getTrayIconPath() {
   if (app.isPackaged) {
-    // After build → goes into resources folder
-    return path.join(process.resourcesPath, 'dymo_ico.png');
+    return path.join(process.resourcesPath, "icon.ico");
   } else {
-    // In development
-    return path.join(__dirname, '..', 'build', 'dymo_ico.png');
+    return path.join(__dirname, "..", "build", "icon.ico");
   }
 }
 
@@ -230,8 +248,10 @@ function createMainWindow() {
   });
 
   mainWindow.once("ready-to-show", () => {
-    mainWindow.show();
-    mainWindow.focus();
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -268,6 +288,10 @@ function createMainWindow() {
     }
   );
 
+  mainWindow.on("close", () => {
+    app.quit();
+  });
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
@@ -298,7 +322,6 @@ function openSetRemoteWindow() {
     title: "Set Remote URL",
     backgroundColor: "#f4f7fb",
     show: false,
-    // Temporarily not modal/parented to avoid hidden-window weirdness
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -330,17 +353,21 @@ function openSetRemoteWindow() {
 }
 
 async function createAndLoadMainWindow() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+    return;
+  }
+
   createMainWindow();
   await loadBestTarget(mainWindow);
 }
 
-app.whenReady().then(async () => {
-  log("App ready");
-  log("userData path:", app.getPath("userData"));
-  log("settings path:", getConfigPath());
-  log("argv:", process.argv);
+function createTray() {
+  if (tray) {
+    return;
+  }
 
-  await createAndLoadMainWindow();
   const iconPath = getTrayIconPath();
 
   tray = new Tray(iconPath);
@@ -350,10 +377,9 @@ app.whenReady().then(async () => {
     {
       label: "Open",
       click: () => {
-        if (mainWindow) {
-          mainWindow.show();
-          mainWindow.focus();
-        }
+        createAndLoadMainWindow().catch((error) => {
+          log("Failed to open main window from tray:", error);
+        });
       }
     },
     {
@@ -371,6 +397,22 @@ app.whenReady().then(async () => {
 
   tray.setContextMenu(trayMenu);
 
+  tray.on("double-click", () => {
+    createAndLoadMainWindow().catch((error) => {
+      log("Failed to open main window from tray double-click:", error);
+    });
+  });
+}
+
+app.whenReady().then(async () => {
+  log("App ready");
+  log("userData path:", app.getPath("userData"));
+  log("settings path:", getConfigPath());
+  log("argv:", process.argv);
+
+  createTray();
+  await createAndLoadMainWindow();
+
   const shortcutRegistered = globalShortcut.register("F10", () => {
     log("Global shortcut pressed: F10");
     openSetRemoteWindow();
@@ -380,14 +422,17 @@ app.whenReady().then(async () => {
   log("Global shortcut F10 active:", globalShortcut.isRegistered("F10"));
 
   app.on("activate", async () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      await createAndLoadMainWindow();
-    }
+    await createAndLoadMainWindow();
   });
+}).catch((error) => {
+  log("App failed during startup:", error);
+  app.quit();
 });
 
-app.on("window-all-closed", (e) => {
-  e.preventDefault();
+app.on("window-all-closed", () => {
+  if (process.platform === "darwin") {
+    return;
+  }
 });
 
 app.on("will-quit", () => {
