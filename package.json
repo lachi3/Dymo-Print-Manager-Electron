@@ -1,6 +1,6 @@
 {
   "name": "dymo-print-manager-electron",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "productName": "DYMO Print Manager",
   "description": "Desktop wrapper for Dymo Print Manager",
   "main": "electron/main.js",
