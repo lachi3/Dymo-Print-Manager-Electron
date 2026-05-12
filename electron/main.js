@@ -5,7 +5,7 @@ const https = require("https");
 const fs = require("fs");
 
 const DEFAULT_LOCAL_URL = "http://localhost:3000";
-const DEFAULT_REMOTE_URL = "http://SCBO-PC23X5RJ:3000";
+const DEFAULT_REMOTE_URL = "http://10.16.216.65:3000";
 
 let mainWindow = null;
 let remoteWindow = null;
